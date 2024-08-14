@@ -8,7 +8,7 @@ from flask_swagger import swagger
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
-from models import db, User, Planet, Character, Starships, Favorite
+from models import db, User, Planet, Character, Favorite
 #from models import Person
 
 app = Flask(__name__)
@@ -103,7 +103,21 @@ def add_favorite_planet(planet_id):
     db.session.commit()
 
     return jsonify({"message": "favorite_planet_added_successfully"}), 200
-#do the same thing for character as line 93-105
+
+@app.route('/favorite/people/<int:people_id>', methods=['POST'])
+def add_favorite_people(people_id):
+    user_id = request.args.get("user_id")
+    user = User.query.get(user_id)
+    
+    if user is None:
+        raise APIException("user_not_found", status_code=404)
+    
+    favorite = Favorite(name="people", user_id=user_id, character_id=people_id)
+    db.session.add(favorite)
+    db.session.commit()
+
+    return jsonify({"message": "favorite_people_added_successfully"}), 200
+
 @app.route('/favorite/planet/<int:planet_id>', methods=['DELETE'])
 def remove_favorite_planet(planet_id):
     user_id = request.args.get("user_id")
@@ -115,7 +129,19 @@ def remove_favorite_planet(planet_id):
     db.session.commit()
 
     return jsonify({"message": "favorite_planet_removed_successfully"}), 200
-# do the same thing for character as line 117 
+
+@app.route('/favorite/people/<int:people_id>', methods=['DELETE'])
+def remove_favorite_people(people_id):
+    user_id = request.args.get("user_id")
+    favorite = Favorite.query.filter_by(user_id=user_id, character_id=people_id).first()
+    if favorite is None:
+        raise APIException("favorite_people_not_found", status_code=404)
+    
+    db.session.delete(favorite)
+    db.session.commit()
+
+    return jsonify({"message": "favorite_people_removed_successfully"}), 200
+
 # this only runs if `$ python src/app.py` is executed
 if __name__ == '__main__':
     PORT = int(os.environ.get('PORT', 3000))

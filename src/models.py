@@ -11,8 +11,8 @@ class Favorite(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     planet_id = db.Column(db.Integer, db.ForeignKey("planet.id"))
     character_id = db.Column(db.Integer, db.ForeignKey("character.id"))
-    favorite_characters = db.relationship("Character", backref = "favorites")
-    favorite_planets = db.relationship("Planet", backref = "favorites")
+    character = db.relationship("Character", backref = "favorites")
+    planet = db.relationship("Planet", backref = "favorites")
     user = db.relationship("User", backref = "favorites")
 
     def serialize(self):
@@ -26,7 +26,7 @@ class Favorite(db.Model):
 
 
 class User(db.Model):
-    __tablename__ = 'users'
+    __tablename__ = 'user'
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(50), nullable=False, unique=True)
     password = db.Column(db.String(50), nullable=False)
@@ -37,14 +37,14 @@ class User(db.Model):
     def serialize(self):
         return {
             "id": self.id,
-            "email": self.name,
+            "email": self.email,
             "favorites": [favorite.serialize() for favorite in self.favorites]
         }
 
 
 
 class Character(db.Model):
-    __tablename__ = 'characters'
+    __tablename__ = 'character'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False)
     birth_year = db.Column(db.String(50))
@@ -61,7 +61,7 @@ class Character(db.Model):
         }
 
 class Planet(db.Model):
-    __tablename__ = 'planets'
+    __tablename__ = 'planet'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False, unique = True)
     population = db.Column(db.BigInteger, nullable=True)
